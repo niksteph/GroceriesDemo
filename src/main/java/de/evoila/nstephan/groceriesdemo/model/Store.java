@@ -7,7 +7,7 @@ import javax.persistence.*;
 import java.util.UUID;
 
 @Entity
-public class GroceryItem {
+public class Store {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -16,20 +16,5 @@ public class GroceryItem {
 
     @Getter
     @Setter
-    private String description;
-
-    @Getter
-    @Setter
-    private String amount;
-
-    @Getter
-    @Setter
-    private String comment;
-
-    @ManyToOne
-    @Getter
-    @Setter
-    private Store store;
-
-    //TODO optional: category
+    private String name;
 }
