@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Plain {@link org.springframework.web.bind.annotation.RestController} without HATEOAS.
@@ -43,8 +44,14 @@ public class GroceryPlainController {
 
     @PutMapping("/{id}")
     public GroceryItem putItem(@PathVariable Long id, @RequestBody GroceryItem item) {
-        // TODO implement
-        return null;
+        if (item.getId() == null)
+            item.setId(id);
+        if (!Objects.equals(id, item.getId()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Request body contains an id that does not match the id specified in the path.");
+        if (!repo.existsById(id))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        return repo.save(item);
     }
 
     @PatchMapping("/{id}")
