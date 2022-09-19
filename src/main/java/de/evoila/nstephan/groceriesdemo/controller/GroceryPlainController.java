@@ -39,6 +39,8 @@ public class GroceryPlainController {
 
     @PostMapping
     public GroceryItem postItem(@RequestBody GroceryItem item) {
+        if (item.getId() != null)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Post request should not contain an id.");
         return repo.save(item);
     }
 
