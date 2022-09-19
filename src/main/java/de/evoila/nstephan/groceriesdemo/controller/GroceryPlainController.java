@@ -4,7 +4,9 @@ import de.evoila.nstephan.groceriesdemo.model.GroceryItem;
 import de.evoila.nstephan.groceriesdemo.repository.GroceryItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
 
@@ -31,8 +33,7 @@ public class GroceryPlainController {
 
     @GetMapping("/{id}")
     public GroceryItem getItem(@PathVariable Long id) {
-        // TODO implement
-        return null;
+        return repo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
     @PostMapping
