@@ -63,7 +63,9 @@ public class GroceryPlainController {
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteItem(@PathVariable Long id) {
-        // TODO implement
+        GroceryItem item = repo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        repo.delete(item);
     }
 }
