@@ -11,6 +11,7 @@ public class GroceryItem {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Getter
+    @Setter
     private Long id;
 
     @Getter
