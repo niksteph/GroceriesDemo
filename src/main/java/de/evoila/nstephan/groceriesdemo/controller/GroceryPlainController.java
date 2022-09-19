@@ -38,8 +38,7 @@ public class GroceryPlainController {
 
     @PostMapping
     public GroceryItem postItem(@RequestBody GroceryItem item) {
-        // TODO implement
-        return null;
+        return repo.save(item);
     }
 
     @PutMapping("/{id}")
