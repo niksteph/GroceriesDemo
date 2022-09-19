@@ -9,3 +9,6 @@ spring:
       enabled: true
   jpa:
     defer-datasource-initialization: true
+server:
+  error:
+    include-stacktrace: never
