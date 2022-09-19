@@ -3,6 +3,7 @@ package de.evoila.nstephan.groceriesdemo.controller;
 import de.evoila.nstephan.groceriesdemo.model.GroceryItem;
 import de.evoila.nstephan.groceriesdemo.repository.GroceryItemRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -18,9 +19,14 @@ public class GroceryPlainController {
     private final GroceryItemRepository repo;
 
     @GetMapping
-    public Iterable<GroceryItem> getAll(@RequestParam Integer page, @RequestParam Integer size) {
-        // TODO implement
-        return null;
+    public Iterable<GroceryItem> getAll(@RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size) {
+        Page<GroceryItem> groceryItemPage;
+        if (page == null || size == null)
+            groceryItemPage = repo.findAll(Pageable.unpaged());
+        else
+            groceryItemPage = repo.findAll(PageRequest.of(page, size));
+        return groceryItemPage.getContent();
     }
 
     @GetMapping("/{id}")
