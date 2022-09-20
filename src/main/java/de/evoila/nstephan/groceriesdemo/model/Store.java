@@ -1,19 +1,16 @@
 package de.evoila.nstephan.groceriesdemo.model;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import javax.persistence.*;
 
 @Entity
+@Data
 public class Store {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @Getter
     private Long id;
 
-    @Getter
-    @Setter
     private String name;
 }
