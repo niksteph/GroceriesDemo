@@ -10,3 +10,6 @@ insert into GROCERY_ITEM (ID, DESCRIPTION, AMOUNT)
 values (next value for hibernate_sequence, 'Eier', '12');
 insert into GROCERY_ITEM (ID, DESCRIPTION, AMOUNT)
 values (next value for hibernate_sequence, 'Wasser', '12 l');
+
+insert into STORE (ID, NAME)
+values (next value for hibernate_sequence, 'Rewe');
