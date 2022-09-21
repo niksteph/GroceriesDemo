@@ -1,16 +1,15 @@
 package de.evoila.nstephan.groceriesdemo.model;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
 
 @Entity
 @Data
-public class GroceryItem {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Long id;
+@EqualsAndHashCode(callSuper = true)
+public class GroceryItem extends BaseEntity {
 
     private String description;
 
