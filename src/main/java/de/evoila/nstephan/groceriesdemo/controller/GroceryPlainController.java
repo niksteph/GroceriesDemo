@@ -1,5 +1,7 @@
 package de.evoila.nstephan.groceriesdemo.controller;
 
+import de.evoila.nstephan.groceriesdemo.dto.GroceryItemDTO;
+import de.evoila.nstephan.groceriesdemo.mapping.GroceryItemMapper;
 import de.evoila.nstephan.groceriesdemo.model.GroceryItem;
 import de.evoila.nstephan.groceriesdemo.repository.GroceryItemRepository;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -20,6 +21,7 @@ import java.util.Objects;
 public class GroceryPlainController {
 
     private final GroceryItemRepository repo;
+    private final GroceryItemMapper mapper;
 
     @GetMapping
     public Iterable<GroceryItem> getAll(@RequestParam(required = false) Integer page,
@@ -38,14 +40,16 @@ public class GroceryPlainController {
     }
 
     @PostMapping
-    public GroceryItem postItem(@RequestBody GroceryItem item) {
+    public GroceryItem postItem(@RequestBody GroceryItemDTO itemDTO) {
+        GroceryItem item = mapper.dtoToEntity(itemDTO);
         if (item.getId() != null)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Post request should not contain an id.");
         return repo.save(item);
     }
 
     @PutMapping("/{id}")
-    public GroceryItem putItem(@PathVariable Long id, @RequestBody GroceryItem item) {
+    public GroceryItem putItem(@PathVariable Long id, @RequestBody GroceryItemDTO itemDto) {
+        GroceryItem item = mapper.dtoToEntity(itemDto);
         if (item.getId() == null)
             item.setId(id);
         if (!Objects.equals(id, item.getId()))
@@ -57,7 +61,7 @@ public class GroceryPlainController {
     }
 
     @PatchMapping("/{id}")
-    public GroceryItem patchItem(@PathVariable Long id, @RequestBody Map<String, String> itemMap) {
+    public GroceryItem patchItem(@PathVariable Long id, @RequestBody GroceryItemDTO itemDTO) {
         // TODO implement
         return null;
     }
