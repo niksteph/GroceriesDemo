@@ -63,10 +63,11 @@ class GroceryPlainControllerTest {
         itemWithoutId = new GroceryItem();
         itemWithId = new GroceryItem();
         itemWithId.setId(0L);
-        mockRepo();
+        stubRepo();
+        stubMapper();
     }
 
-    void mockRepo() {
+    void stubRepo() {
         doReturn(new PageImpl<>(items, UNPAGED, items.size())).when(repo)
                 .findAll(argThat((ArgumentMatcher<Pageable>) Pageable::isUnpaged));
         doReturn(new PageImpl<>(items.subList(0, PAGE_SIZE), FIRST_PAGE, PAGE_SIZE)).when(repo)
@@ -75,10 +76,11 @@ class GroceryPlainControllerTest {
         when(repo.findById(EXISTING_ID)).thenReturn(Optional.of(itemWithId));
         when(repo.findById(NOT_EXISTING_ID)).thenReturn(Optional.empty());
         when(repo.save(any(GroceryItem.class))).thenReturn(itemWithId);
+    }
 
+    void stubMapper() {
         doReturn(itemWithoutId).when(mapper).dtoToEntity(argThat((GroceryItemDTO dto) -> dto.getId() == null));
         doReturn(itemWithId).when(mapper).dtoToEntity(argThat((GroceryItemDTO dto) -> dto.getId() != null));
-
     }
 
     @Test
