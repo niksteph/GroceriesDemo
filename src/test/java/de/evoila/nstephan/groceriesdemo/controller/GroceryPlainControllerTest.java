@@ -1,5 +1,6 @@
 package de.evoila.nstephan.groceriesdemo.controller;
 
+import de.evoila.nstephan.groceriesdemo.dto.GroceryItemDTO;
 import de.evoila.nstephan.groceriesdemo.mapping.GroceryItemMapper;
 import de.evoila.nstephan.groceriesdemo.model.GroceryItem;
 import de.evoila.nstephan.groceriesdemo.repository.GroceryItemRepository;
@@ -10,15 +11,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.*;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.*;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -43,15 +47,22 @@ class GroceryPlainControllerTest {
     private static final long EXISTING_ID = 0L;
     private static final long NOT_EXISTING_ID = 1L;
 
-    private final List<GroceryItem> items = new ArrayList<>();
+    private List<GroceryItem> items;
+    private GroceryItem itemWithoutId;
+    private GroceryItem itemWithId;
 
     @BeforeEach
     void init() {
+        items = new ArrayList<>();
         for (int i = 0; i < TOTAL_ITEMS; i++) {
             var item = new GroceryItem();
             item.setId((long) i);
             items.add(item);
         }
+
+        itemWithoutId = new GroceryItem();
+        itemWithId = new GroceryItem();
+        itemWithId.setId(0L);
         mockRepo();
     }
 
@@ -61,8 +72,13 @@ class GroceryPlainControllerTest {
         doReturn(new PageImpl<>(items.subList(0, PAGE_SIZE), FIRST_PAGE, PAGE_SIZE)).when(repo)
                 .findAll(
                         argThat((Pageable p) -> p.isPaged() && p.getPageSize() == PAGE_SIZE && p.getPageNumber() == 0));
-        when(repo.findById(EXISTING_ID)).thenReturn(Optional.of(new GroceryItem()));
+        when(repo.findById(EXISTING_ID)).thenReturn(Optional.of(itemWithId));
         when(repo.findById(NOT_EXISTING_ID)).thenReturn(Optional.empty());
+        when(repo.save(any(GroceryItem.class))).thenReturn(itemWithId);
+
+        doReturn(itemWithoutId).when(mapper).dtoToEntity(argThat((GroceryItemDTO dto) -> dto.getId() == null));
+        doReturn(itemWithId).when(mapper).dtoToEntity(argThat((GroceryItemDTO dto) -> dto.getId() != null));
+
     }
 
     @Test
@@ -85,5 +101,17 @@ class GroceryPlainControllerTest {
     @Test
     void getNotExisting() throws Exception {
         mockMvc.perform(get(String.format("%s/%d", BASE_PATH, NOT_EXISTING_ID))).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void postSuccess() throws Exception {
+        mockMvc.perform(post(BASE_PATH).contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void postFail() throws Exception {
+        mockMvc.perform(post(BASE_PATH).contentType(MediaType.APPLICATION_JSON).content("{\"id\":\"0\"}"))
+                .andExpect(status().isBadRequest());
     }
 }
