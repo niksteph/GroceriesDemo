@@ -40,6 +40,7 @@ public class GroceryPlainController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public GroceryItem postItem(@RequestBody GroceryItemDTO itemDTO) {
         GroceryItem item = mapper.dtoToEntity(itemDTO);
         if (item.getId() != null)
