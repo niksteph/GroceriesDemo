@@ -17,10 +17,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.*;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -43,6 +43,7 @@ class GroceryPlainControllerTest {
     private static final int PAGE_SIZE = 5;
     private static final Pageable UNPAGED = Pageable.unpaged();
     private static final Pageable FIRST_PAGE = PageRequest.ofSize(PAGE_SIZE);
+    private static final ArgumentMatcher<GroceryItemDTO> DTO_CONTAINS_ID = dto -> dto.getId() != null;
 
     private static final long EXISTING_ID = 0L;
     private static final long NOT_EXISTING_ID = 1L;
@@ -79,8 +80,13 @@ class GroceryPlainControllerTest {
     }
 
     void stubMapper() {
-        doReturn(itemWithoutId).when(mapper).dtoToEntity(argThat((GroceryItemDTO dto) -> dto.getId() == null));
-        doReturn(itemWithId).when(mapper).dtoToEntity(argThat((GroceryItemDTO dto) -> dto.getId() != null));
+        doReturn(itemWithoutId).when(mapper).dtoToEntity(not(argThat(DTO_CONTAINS_ID)));
+        doAnswer(invocationOnMock -> {
+            GroceryItemDTO dto = invocationOnMock.getArgument(0);
+            var item = new GroceryItem();
+            item.setId(dto.getId());
+            return item;
+        }).when(mapper).dtoToEntity(argThat(DTO_CONTAINS_ID));
     }
 
     @Test
