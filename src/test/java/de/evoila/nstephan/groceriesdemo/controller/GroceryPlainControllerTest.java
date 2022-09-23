@@ -10,7 +10,8 @@ import org.mockito.ArgumentMatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -42,15 +43,12 @@ class GroceryPlainControllerTest {
     private static final int TOTAL_ITEMS = 10;
     private static final int PAGE_SIZE = 5;
     private static final Pageable UNPAGED = Pageable.unpaged();
-    private static final Pageable FIRST_PAGE = PageRequest.ofSize(PAGE_SIZE);
     private static final ArgumentMatcher<GroceryItemDTO> DTO_CONTAINS_ID = dto -> dto.getId() != null;
 
     private static final long EXISTING_ID = 0L;
-    private static final long NOT_EXISTING_ID = 1L;
+    private static final long NOT_EXISTING_ID = -1L;
 
     private List<GroceryItem> items;
-    private GroceryItem itemWithoutId;
-    private GroceryItem itemWithId;
 
     @BeforeEach
     void init() {
@@ -61,9 +59,6 @@ class GroceryPlainControllerTest {
             items.add(item);
         }
 
-        itemWithoutId = new GroceryItem();
-        itemWithId = new GroceryItem();
-        itemWithId.setId(0L);
         stubRepo();
         stubMapper();
     }
@@ -71,18 +66,37 @@ class GroceryPlainControllerTest {
     void stubRepo() {
         doReturn(new PageImpl<>(items, UNPAGED, items.size())).when(repo)
                 .findAll(argThat((ArgumentMatcher<Pageable>) Pageable::isUnpaged));
-        doReturn(new PageImpl<>(items.subList(0, PAGE_SIZE), FIRST_PAGE, PAGE_SIZE)).when(repo)
-                .findAll(
-                        argThat((Pageable p) -> p.isPaged() && p.getPageSize() == PAGE_SIZE && p.getPageNumber() == 0));
-        when(repo.findById(EXISTING_ID)).thenReturn(Optional.of(itemWithId));
-        when(repo.findById(NOT_EXISTING_ID)).thenReturn(Optional.empty());
-        when(repo.save(any(GroceryItem.class))).thenReturn(itemWithId);
+        doAnswer(invocation -> {
+            Pageable pageable = invocation.getArgument(0);
+            int page = pageable.getPageNumber();
+            int size = pageable.getPageSize();
+            int start = page * size;
+            int end = Math.min(start + size, items.size());
+            List<GroceryItem> content = items.subList(start, end);
+            return new PageImpl<>(content, pageable, content.size());
+        }).when(repo).findAll(argThat((ArgumentMatcher<Pageable>) Pageable::isPaged));
+
+        when(repo.findById(anyLong())).thenAnswer(invocation -> {
+            int index = Math.toIntExact(invocation.getArgument(0));
+            if (0 <= index && index < items.size())
+                return Optional.of(items.get(index));
+            else
+                return Optional.empty();
+        });
+
+        when(repo.save(any(GroceryItem.class))).thenAnswer(invocation -> {
+            GroceryItem item = invocation.getArgument(0);
+            if (item.getId() == null)
+                item.setId((long) items.size());
+            items.add(item);
+            return item;
+        });
         when(repo.existsById(EXISTING_ID)).thenReturn(true);
         when(repo.existsById(NOT_EXISTING_ID)).thenReturn(false);
     }
 
     void stubMapper() {
-        doReturn(itemWithoutId).when(mapper).dtoToEntity(not(argThat(DTO_CONTAINS_ID)));
+        doReturn(new GroceryItem()).when(mapper).dtoToEntity(not(argThat(DTO_CONTAINS_ID)));
         doAnswer(invocationOnMock -> {
             GroceryItemDTO dto = invocationOnMock.getArgument(0);
             var item = new GroceryItem();
