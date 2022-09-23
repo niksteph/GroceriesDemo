@@ -77,6 +77,8 @@ class GroceryPlainControllerTest {
         when(repo.findById(EXISTING_ID)).thenReturn(Optional.of(itemWithId));
         when(repo.findById(NOT_EXISTING_ID)).thenReturn(Optional.empty());
         when(repo.save(any(GroceryItem.class))).thenReturn(itemWithId);
+        when(repo.existsById(EXISTING_ID)).thenReturn(true);
+        when(repo.existsById(NOT_EXISTING_ID)).thenReturn(false);
     }
 
     void stubMapper() {
