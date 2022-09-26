@@ -22,8 +22,7 @@ import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -137,5 +136,30 @@ class GroceryPlainControllerTest {
     void postFail() throws Exception {
         mockMvc.perform(post(BASE_PATH).contentType(MediaType.APPLICATION_JSON).content("{\"id\":\"0\"}"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void putSameIdInBody() throws Exception {
+        long id = 0L;
+        var path = String.format("%s/%d", BASE_PATH, id);
+        var body = String.format("{\"id\":\"%d\", \"description\":\"%s\"}", id, "some replaced item");
+        mockMvc.perform(put(path).contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isOk());
+    }
+
+    @Test
+    void putDifferentIdInBody() throws Exception {
+        long idPath = 0L;
+        long idBody = 1L;
+        var path = String.format("%s/%d", BASE_PATH, idPath);
+        var body = String.format("{\"id\":\"%d\", \"description\":\"%s\"}", idBody, "some replaced item");
+        mockMvc.perform(put(path).contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void putNoIdInBody() throws Exception {
+        var path = String.format("%s/%d", BASE_PATH, 0);
+        var body = String.format("{\"description\":\"%s\"}", "some replaced item");
+        mockMvc.perform(put(path).contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isOk());
     }
 }
