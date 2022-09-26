@@ -27,6 +27,6 @@ public abstract class EntityMapper {
      * @return an object with a subclass of {@link BaseEntity}
      */
     public <T extends BaseEntity> T entityFromId(Long id, @TargetType Class<T> clazz) {
-        return em.find(clazz, id);
+        return id != null ? em.find(clazz, id) : null;
     }
 }
