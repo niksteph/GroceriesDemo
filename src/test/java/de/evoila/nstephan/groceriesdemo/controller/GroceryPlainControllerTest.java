@@ -142,6 +142,16 @@ class GroceryPlainControllerTest {
     }
 
     @ParameterizedTest
+    @CsvSource({ "0, 0, 200", "0, 1, 400", "0, , 200", "-1, , 404" })
+    void patchItem(long idPath, Long idBody, int responseStatus) throws Exception {
+        var path = String.format("%s/%d", BASE_PATH, idPath);
+        var idField = idBody != null ? String.format("\"id\":\"%d\",", idBody) : "";
+        var body = String.format("{%s\"description\":\"%s\"}", idField, "some patched item");
+        mockMvc.perform(patch(path).contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().is(responseStatus));
+    }
+
+    @ParameterizedTest
     @CsvSource({ "0, 204", "-1, 404" })
     void deleteItem(long id, int responseStatus) throws Exception {
         var path = String.format("%s/%d", BASE_PATH, id);
