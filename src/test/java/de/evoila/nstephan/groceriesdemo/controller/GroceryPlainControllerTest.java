@@ -6,6 +6,8 @@ import de.evoila.nstephan.groceriesdemo.model.GroceryItem;
 import de.evoila.nstephan.groceriesdemo.repository.GroceryItemRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentMatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -116,50 +118,26 @@ class GroceryPlainControllerTest {
                 .andExpect(jsonPath("$", hasSize(PAGE_SIZE)));
     }
 
-    @Test
-    void getExisting() throws Exception {
-        mockMvc.perform(get(String.format("%s/%d", BASE_PATH, EXISTING_ID))).andExpect(status().isOk());
+    @ParameterizedTest
+    @CsvSource({ "0, 200", "-1, 404" })
+    void getSingle(long id, int responseStatus) throws Exception {
+        mockMvc.perform(get(String.format("%s/%d", BASE_PATH, id))).andExpect(status().is(responseStatus));
     }
 
-    @Test
-    void getNotExisting() throws Exception {
-        mockMvc.perform(get(String.format("%s/%d", BASE_PATH, NOT_EXISTING_ID))).andExpect(status().isNotFound());
+    @ParameterizedTest
+    @CsvSource({ "{}, 201", "{\"id\":\"0\"}, 400" })
+    void postItem(String requestBody, int responseStatus) throws Exception {
+        mockMvc.perform(post(BASE_PATH).contentType(MediaType.APPLICATION_JSON).content(requestBody))
+                .andExpect(status().is(responseStatus));
     }
 
-    @Test
-    void postSuccess() throws Exception {
-        mockMvc.perform(post(BASE_PATH).contentType(MediaType.APPLICATION_JSON).content("{}"))
-                .andExpect(status().isCreated());
-    }
-
-    @Test
-    void postFail() throws Exception {
-        mockMvc.perform(post(BASE_PATH).contentType(MediaType.APPLICATION_JSON).content("{\"id\":\"0\"}"))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void putSameIdInBody() throws Exception {
-        long id = 0L;
-        var path = String.format("%s/%d", BASE_PATH, id);
-        var body = String.format("{\"id\":\"%d\", \"description\":\"%s\"}", id, "some replaced item");
-        mockMvc.perform(put(path).contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isOk());
-    }
-
-    @Test
-    void putDifferentIdInBody() throws Exception {
-        long idPath = 0L;
-        long idBody = 1L;
+    @ParameterizedTest
+    @CsvSource({ "0, 0, 200", "0, 1, 400", "0, , 200", "-1, , 404" })
+    void putItem(long idPath, Long idBody, int responseStatus) throws Exception {
         var path = String.format("%s/%d", BASE_PATH, idPath);
-        var body = String.format("{\"id\":\"%d\", \"description\":\"%s\"}", idBody, "some replaced item");
+        var idField = idBody != null ? String.format("\"id\":\"%d\",", idBody) : "";
+        var body = String.format("{%s\"description\":\"%s\"}", idField, "some replaced item");
         mockMvc.perform(put(path).contentType(MediaType.APPLICATION_JSON).content(body))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void putNoIdInBody() throws Exception {
-        var path = String.format("%s/%d", BASE_PATH, 0);
-        var body = String.format("{\"description\":\"%s\"}", "some replaced item");
-        mockMvc.perform(put(path).contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isOk());
+                .andExpect(status().is(responseStatus));
     }
 }
