@@ -1,9 +1,11 @@
 package de.evoila.nstephan.groceriesdemo.controller;
 
 import de.evoila.nstephan.groceriesdemo.dto.GroceryItemDTO;
+import de.evoila.nstephan.groceriesdemo.dto.GroceryItemPatchDTO;
 import de.evoila.nstephan.groceriesdemo.mapping.GroceryItemMapper;
 import de.evoila.nstephan.groceriesdemo.model.GroceryItem;
 import de.evoila.nstephan.groceriesdemo.repository.GroceryItemRepository;
+import de.evoila.nstephan.groceriesdemo.util.AdditionalMediaTypes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
@@ -61,10 +63,14 @@ public class GroceryPlainController {
         return repo.save(item);
     }
 
-    @PatchMapping("/{id}")
-    public GroceryItem patchItem(@PathVariable Long id, @RequestBody GroceryItemDTO itemDTO) {
-        // TODO implement
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+    @PatchMapping(value = "/{id}", consumes = AdditionalMediaTypes.APPLICATION_MERGE_PATCH_JSON_VALUE)
+    public GroceryItem patchItem(@PathVariable Long id, @RequestBody GroceryItemPatchDTO itemDTO) {
+        if (itemDTO.getId() != null && !Objects.equals(id, itemDTO.getId()))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Request body contains an id that does not match the id specified in the path.");
+        GroceryItem item = repo.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        mapper.patchEntity(item, itemDTO);
+        return repo.save(item);
     }
 
     @DeleteMapping("/{id}")
