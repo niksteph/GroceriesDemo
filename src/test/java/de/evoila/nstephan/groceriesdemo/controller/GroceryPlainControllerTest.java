@@ -140,4 +140,11 @@ class GroceryPlainControllerTest {
         mockMvc.perform(put(path).contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().is(responseStatus));
     }
+
+    @ParameterizedTest
+    @CsvSource({ "0, 204", "-1, 404" })
+    void deleteItem(long id, int responseStatus) throws Exception {
+        var path = String.format("%s/%d", BASE_PATH, id);
+        mockMvc.perform(delete(path)).andExpect(status().is(responseStatus));
+    }
 }
