@@ -64,7 +64,7 @@ public class GroceryPlainController {
     @PatchMapping("/{id}")
     public GroceryItem patchItem(@PathVariable Long id, @RequestBody GroceryItemDTO itemDTO) {
         // TODO implement
-        return null;
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
 
     @DeleteMapping("/{id}")
