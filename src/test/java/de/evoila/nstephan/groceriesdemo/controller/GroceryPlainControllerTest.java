@@ -4,6 +4,7 @@ import de.evoila.nstephan.groceriesdemo.dto.GroceryItemDTO;
 import de.evoila.nstephan.groceriesdemo.mapping.GroceryItemMapper;
 import de.evoila.nstephan.groceriesdemo.model.GroceryItem;
 import de.evoila.nstephan.groceriesdemo.repository.GroceryItemRepository;
+import de.evoila.nstephan.groceriesdemo.util.AdditionalMediaTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -147,7 +148,7 @@ class GroceryPlainControllerTest {
         var path = String.format("%s/%d", BASE_PATH, idPath);
         var idField = idBody != null ? String.format("\"id\":\"%d\",", idBody) : "";
         var body = String.format("{%s\"description\":\"%s\"}", idField, "some patched item");
-        mockMvc.perform(patch(path).contentType(MediaType.APPLICATION_JSON).content(body))
+        mockMvc.perform(patch(path).contentType(AdditionalMediaTypes.APPLICATION_MERGE_PATCH_JSON).content(body))
                 .andExpect(status().is(responseStatus));
     }
 
