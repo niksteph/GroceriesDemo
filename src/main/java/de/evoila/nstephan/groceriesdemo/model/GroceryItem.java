@@ -21,6 +21,4 @@ public class GroceryItem extends BaseEntity {
 
     @ManyToOne
     private Store store;
-
-    //TODO optional: category
 }
