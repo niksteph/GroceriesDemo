@@ -91,6 +91,16 @@
                     </excludes>
                 </configuration>
             </plugin>
+
+            <!-- for building docker images -->
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <to>groceries-demo-jib</to>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
